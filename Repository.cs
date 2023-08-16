@@ -15,6 +15,7 @@ namespace Homework_7
         private Worker[] workers;
         private string path;
         private int index;
+        
 
         /// <summary>
         /// Увеличение массива работников в два раза. Вызывается в случае выхода из массива
@@ -29,9 +30,9 @@ namespace Homework_7
         /// </summary>
         private void CreateFile()
         {
-            using (StreamWriter sw = new StreamWriter(this.path, false))
+            using (StreamWriter sw = new StreamWriter(this.path, true))
             {
-                sw.WriteLine($"{titles[0],5} {titles[1],30} {titles[2],30} {titles[3],10} {titles[4],10} {titles[5],15} {titles[6],20}");
+                sw.WriteLine($"{titles[0]}#{titles[1]}#{titles[2]}#{titles[3]}#{titles[4]}#{titles[5]}#{titles[6]}");
             }
         }
 
@@ -58,15 +59,32 @@ namespace Homework_7
         /// </summary>
         private void Print(Worker printworker)
         {
-            Console.WriteLine($"{printworker.ID,5} {printworker.DateTimeAddNote,30} {printworker.FIO,30} {printworker.Age,10} {printworker.Height,10} {printworker.DateOfBirth.ToString("dd/MM/yyyy"),15} {printworker.PlaceOfBirth,20}");
+            Console.WriteLine($"{printworker.ID,5} {printworker.DateTimeAddNote,25} {printworker.FIO,20} {printworker.Age,10} {printworker.Height,10} {printworker.DateOfBirth.ToString("dd/MM/yyyy"),15} {printworker.PlaceOfBirth,20}");
         }
 
+        /// <summary>
+        /// Очищает базу данных из памяти
+        /// </summary>
+        private void Clear()
+        {
+            workers = new Worker[2];            
+            index = 0;
+        }
+
+        /// <summary>
+        /// Возвращает ID для нового работника
+        /// </summary>
+        /// <returns></returns>
+        public int GetNewId()
+        {
+            return workers.Max(w => w.ID) + 1;
+        }
         /// <summary>
         /// Выводит данные из памяти на экран
         /// </summary>
         public void PrintAll()
         {
-            Console.WriteLine($"{titles[0],5} {titles[1],30} {titles[2],30} {titles[3],10} {titles[4],10} {titles[5],15} {titles[6],20}");
+            Console.WriteLine($"{titles[0],5} {titles[1],25} {titles[2],20} {titles[3],10} {titles[4],10} {titles[5],15} {titles[6],20}");
             for (int i = 0; i < index; i++)
             {
                 Print(workers[i]);
@@ -105,15 +123,21 @@ namespace Homework_7
             this.workers[index] = worker;
             this.index++;
         }
-                
+
         /// <summary>
-        /// Удаление работинка
+        /// Удаление работника по id
         /// </summary>
         /// <param name="id">ID работника, подлежащего удалению</param>
-        public void Delete(int id)
+        /// <returns>Успешность удаления</returns>
+        public bool Delete(int id)
         {      
-            workers = workers.Where(w => w.ID != id).ToArray();
-            index--;
+            if (workers.Any( w => w.ID == id))
+            {
+                workers = workers.Where(w => w.ID != id).ToArray();
+                index--;
+                return true; ;
+            }
+            else return false;
         }
 
         /// <summary>
@@ -122,15 +146,13 @@ namespace Homework_7
         /// <param name="dateFrom">Дата начала поиска</param>
         /// <param name="dateTo">Дата конца поиска</param>
         /// <returns></returns>
-        public Worker[] GetWorkersBetweenTwoDates(DateTime dateFrom, DateTime dateTo)
-        {
-            if (dateFrom <= dateTo)
-                return Array.FindAll(workers, w => (w.DateTimeAddNote >= dateFrom) && (w.DateTimeAddNote <= dateTo));
-            else
+        public void GetWorkersBetweenTwoDates(DateTime dateFrom, DateTime dateTo)
+        {            
+            Worker[] printworkers = Array.FindAll(workers, w => (w.DateTimeAddNote >= dateFrom) && (w.DateTimeAddNote <= dateTo));            
+            for (int i = 0; i < printworkers.Length; i++)
             {
-                Console.WriteLine("Даты введены неверно!");
-                return null;
-            }   
+                Print(printworkers[i]);
+            }
         }
 
         /// <summary>
@@ -176,7 +198,7 @@ namespace Homework_7
         {
             using (StreamWriter sw = new StreamWriter(this.path, false))
             {
-                sw.WriteLine($"{titles[0],5} {titles[1],30} {titles[2],30} {titles[3],10} {titles[4],10} {titles[5],15} {titles[6],20}");
+                sw.WriteLine($"{titles[0]}#{titles[1]}#{titles[2]}#{titles[3]}#{titles[4]}#{titles[5]}#{titles[6]}");
                 for (int i = 0; i < index; i++)
                 {
                     sw.WriteLine($"{workers[i].ID}#{workers[i].DateTimeAddNote}#{workers[i].FIO}#{workers[i].Age}#{workers[i].Height}#{workers[i].DateOfBirth.ToString("dd/MM/yyyy")}#{workers[i].PlaceOfBirth}");
@@ -190,6 +212,7 @@ namespace Homework_7
         /// <param name="Num">Кол-во элементов</param>
         public void CreateRandomDB(int Num)
         {
+            Clear();
             Random rnd = new Random();
             for (int i = 0; i < Num; i++)
             {
@@ -206,7 +229,7 @@ namespace Homework_7
         /// Конструктор экземпляра класса. Вызывается при создании экземпляра (команда new)
         /// </summary>
         /// <param name="Path">Путь к файлу данных</param>
-        public Repository()
+        public Repository(string path)
         {
             this.titles = new string[]
         {   "ID",
@@ -217,7 +240,7 @@ namespace Homework_7
             "Дата рождения",
             "Место рождения"};
             this.workers = new Worker[2];
-            this.path = @"D:\Study\Skillbox_C\Урок 7 Структуры и конструкторы\WorkerRepo\DB.txt";
+            this.path = path;
             this.index = 0;
             if (File.Exists(this.path))
             {
